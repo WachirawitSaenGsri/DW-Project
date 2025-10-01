@@ -4,6 +4,7 @@ from datetime import datetime
 from myapp.models import Order, MenuItem, Customer   # แก้ app ให้ตรงโปรเจกต์คุณ
 from myapp.services.ch_client import get_client
 
+#docker compose exec web python manage.py purge_data --all
 class Command(BaseCommand):
     help = "Purge MySQL & ClickHouse data. Use --before YYYY-MM-DD for partial delete, or --all."
 
