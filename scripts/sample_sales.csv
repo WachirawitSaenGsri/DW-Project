@@ -1,0 +1,6 @@
+order_id,order_ts,sku,menu_name,category,qty,unit_price,discount,customer_id,customer_name,channel
+10001,2025-08-01 12:03:00,M001,Pad Thai,Noodles,2,60,0,C001,Somchai,dine-in
+10001,2025-08-01 12:03:00,D001,Iced Tea,Drinks,2,25,0,C001,Somchai,dine-in
+10002,2025-08-01 18:45:12,M002,Green Curry,Curry,1,85,5,C002,Suda,delivery
+
+

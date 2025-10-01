@@ -1,0 +1,71 @@
+# docker-compose.yml
+services:
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: appdb
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppass
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: analytics
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - ch_data:/var/lib/clickhouse
+      - ./scripts:/scripts
+    command: >
+      bash -lc "
+      clickhouse-client -q 'CREATE DATABASE IF NOT EXISTS analytics;';
+      if [ -f /scripts/init_clickhouse.sql ]; then
+        clickhouse-client -n < /scripts/init_clickhouse.sql;
+      fi;
+      /entrypoint.sh
+      "
+
+  web:
+    build:
+      context: .
+      dockerfile: myproject/Dockerfile
+      args:
+        REQ_FILE: requirements.txt     # ถ้าจะใช้ requirements.txt ให้เปลี่ยนค่านี้
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      TZ: Asia/Bangkok
+
+    volumes:
+      - ./:/app                        # เมานต์โปรเจกต์ทั้งหมดเข้า /app
+    working_dir: /app/myproject        # ที่อยู่ของ manage.py
+    depends_on:
+      mysql:
+        condition: service_healthy
+      clickhouse:
+        condition: service_started
+    ports:
+      - "8000:8000"
+    command: >
+      bash -lc "
+      python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      gunicorn myproject.wsgi:application --bind 0.0.0.0:8000 --workers 3
+      "
+
+volumes:
+  mysql_data:
+  ch_data:

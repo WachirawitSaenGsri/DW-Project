@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}อัปโหลด CSV{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow">
+  <h1 class="text-2xl font-semibold mb-4">อัปโหลดไฟล์ยอดขาย (CSV)</h1>
+  <p class="text-sm text-gray-600 mb-4">
+    รองรับหัวคอลัมน์: order_id, order_ts, sku, menu_name, category, qty, unit_price, discount, customer_id, customer_name, channel
+  </p>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-5">
+    {% csrf_token %}
+
+    <!-- ซ่อน input เดิมไว้ แล้วใช้ label เป็นปุ่ม -->
+    <input id="csvFile" name="file" type="file" accept=".csv"
+           class="hidden">
+
+    <div class="flex items-center gap-3">
+      <label for="csvFile"
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-800 cursor-pointer">
+        <!-- ไอคอนกระดาษ -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm0 0v6h6"/>
+        </svg>
+        เลือกไฟล์ CSV
+      </label>
+
+      <span id="fileName" class="text-sm text-gray-600">ยังไม่ได้เลือกไฟล์</span>
+    </div>
+
+    <button class="px-4 py-2 rounded-xl bg-black text-white">อัปโหลด</button>
+  </form>
+
+  {% for m in messages %}
+    <p class="mt-3 text-sm {{ m.tags }}">{{ m }}</p>
+  {% endfor %}
+</div>
+
+<script>
+  // อัปเดตชื่อไฟล์ที่เลือก
+  const input = document.getElementById('csvFile');
+  const fileName = document.getElementById('fileName');
+  input.addEventListener('change', () => {
+    fileName.textContent = input.files.length ? input.files[0].name : 'ยังไม่ได้เลือกไฟล์';
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+order_id,order_ts,sku,menu_name,category,qty,unit_price,discount,customer_id,customer_name,channel
+10002,2025-08-01 18:45:12,D002,Orange Juice,Drinks,1,30,0,C002,Suda,delivery
+10003,2025-08-01 19:15:30,M003,Tom Yum Goong,Soup,1,120,0,C003,Mana,takeaway
+10003,2025-08-01 19:15:30,D003,Water,Drinks,3,15,0,C003,Mana,takeaway
+10004,2025-08-02 11:30:05,M004,Massaman Curry,Curry,2,95,0,C001,Somchai,dine-in
+10004,2025-08-02 11:30:05,S001,Spring Rolls,Appetizer,1,50,0,C001,Somchai,dine-in
+10005,2025-08-02 14:20:40,M005,Chicken Rice,Rice Dish,1,55,0,C004,Nida,delivery
+10006,2025-08-02 20:01:10,M001,Pad Thai,Noodles,1,60,5,C005,Anon,takeaway
+10006,2025-08-02 20:01:10,D001,Iced Tea,Drinks,1,25,0,C005,Anon,takeaway
+10007,2025-08-03 12:40:00,M002,Green Curry,Curry,1,85,0,C006,Preeya,dine-in
+10007,2025-08-03 12:40:00,M003,Tom Yum Goong,Soup,1,120,0,C006,Preeya,dine-in
+10008,2025-08-03 16:15:22,S002,Papaya Salad,Salad,1,65,0,C007,Chai,delivery
+10009,2025-08-03 19:50:55,M006,Basil Stir-fry,Rice Dish,2,70,0,C008,Dao,dine-in
+10009,2025-08-03 19:50:55,D004,Cola,Drinks,2,20,0,C008,Dao,dine-in
+10010,2025-08-04 13:00:15,M001,Pad Thai,Noodles,3,60,10,C004,Nida,delivery
+10011,2025-08-04 17:30:45,M007,Fried Rice,Rice Dish,1,60,0,C009,Wit,takeaway
+10011,2025-08-04 17:30:45,D001,Iced Tea,Drinks,1,25,0,C009,Wit,takeaway
+10012,2025-08-05 10:10:00,M008,Kao Soi,Noodles,1,75,0,C010,Pim,dine-in
+10012,2025-08-05 10:10:00,D003,Water,Drinks,1,15,0,C010,Pim,dine-in
+10013,2025-08-05 14:55:30,M004,Massaman Curry,Curry,1,95,5,C003,Mana,delivery
+10014,2025-08-05 19:25:10,M005,Chicken Rice,Rice Dish,2,55,0,C011,Yut,takeaway
+10014,2025-08-05 19:25:10,S001,Spring Rolls,Appetizer,2,50,0,C011,Yut,takeaway
+10015,2025-08-06 12:15:00,M006,Basil Stir-fry,Rice Dish,1,70,0,C012,Lek,dine-in
+10015,2025-08-06 12:15:00,D002,Orange Juice,Drinks,1,30,0,C012,Lek,dine-in
+10016,2025-08-06 18:35:40,M002,Green Curry,Curry,1,85,0,C005,Anon,delivery
+10017,2025-08-07 11:50:25,M001,Pad Thai,Noodles,1,60,0,C008,Dao,dine-in
+10017,2025-08-07 11:50:25,S002,Papaya Salad,Salad,1,65,0,C008,Dao,dine-in
+10018,2025-08-07 15:40:00,D004,Cola,Drinks,5,20,0,C013,Mai,takeaway
+10019,2025-08-08 13:10:10,M003,Tom Yum Goong,Soup,2,120,10,C006,Preeya,delivery
+10020,2025-08-08 19:05:35,M007,Fried Rice,Rice Dish,1,60,0,C007,Chai,dine-in
+10020,2025-08-08 19:05:35,M008,Kao Soi,Noodles,1,75,0,C007,Chai,dine-in
+10021,2025-08-09 11:00:50,M004,Massaman Curry,Curry,1,95,0,C001,Somchai,takeaway
+10022,2025-08-09 16:45:12,M005,Chicken Rice,Rice Dish,3,55,0,C010,Pim,delivery
+10023,2025-08-09 20:30:00,M006,Basil Stir-fry,Rice Dish,1,70,5,C014,Bo,dine-in
+10023,2025-08-09 20:30:00,S001,Spring Rolls,Appetizer,1,50,0,C014,Bo,dine-in
+10024,2025-08-10 12:20:40,M001,Pad Thai,Noodles,2,60,0,C015,Eak,takeaway
+10024,2025-08-10 12:20:40,D001,Iced Tea,Drinks,2,25,0,C015,Eak,takeaway
+10025,2025-08-10 18:00:15,M002,Green Curry,Curry,1,85,0,C016,Joy,delivery
+10026,2025-08-11 11:45:00,M003,Tom Yum Goong,Soup,1,120,0,C017,Tum,dine-in
+10026,2025-08-11 11:45:00,D003,Water,Drinks,2,15,0,C017,Tum,dine-in
+10027,2025-08-11 15:30:22,S002,Papaya Salad,Salad,1,65,0,C002,Suda,delivery
+10028,2025-08-11 19:40:55,M004,Massaman Curry,Curry,1,95,0,C018,Koy,takeaway
+10028,2025-08-11 19:40:55,D002,Orange Juice,Drinks,1,30,0,C018,Koy,takeaway
+10029,2025-08-12 13:05:10,M005,Chicken Rice,Rice Dish,1,55,0,C019,Ben,dine-in
+10029,2025-08-12 13:05:10,S001,Spring Rolls,Appetizer,1,50,0,C019,Ben,dine-in
+10030,2025-08-12 17:55:45,M006,Basil Stir-fry,Rice Dish,2,70,10,C020,Kai,delivery
+10031,2025-08-13 10:25:00,M007,Fried Rice,Rice Dish,1,60,0,C009,Wit,dine-in
+10031,2025-08-13 10:25:00,D004,Cola,Drinks,1,20,0,C009,Wit,dine-in
+10032,2025-08-13 14:40:30,M008,Kao Soi,Noodles,1,75,0,C004,Nida,takeaway
+10033,2025-08-14 12:10:05,M001,Pad Thai,Noodles,1,60,0,C012,Lek,dine-in
+10033,2025-08-14 12:10:05,M002,Green Curry,Curry,1,85,0,C012,Lek,dine-in

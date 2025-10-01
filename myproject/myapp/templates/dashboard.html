@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% block title %}แดชบอร์ดยอดขาย{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-3xl font-semibold">แดชบอร์ดยอดขาย</h1>
+  <form method="get" class="flex items-end gap-3">
+    <div>{{ filter.start_date.label_tag }} {{ filter.start_date }}</div>
+    <div>{{ filter.end_date.label_tag }} {{ filter.end_date }}</div>
+    <div>{{ filter.channel.label_tag }} {{ filter.channel }}</div>
+    <button class="px-3 py-1.5 rounded-xl bg-black text-white">กรอง</button>
+  </form>
+</div>
+
+<!-- แถวบน: Top menu + KPI cards -->
+<div class="grid lg:grid-cols-12 gap-6">
+  <!-- Top 10 -->
+  <div class="bg-white p-4 rounded-2xl shadow lg:col-span-3">
+    <h2 class="font-semibold mb-2">เมนูขายดี (Top 10)</h2>
+    <ul class="text-sm space-y-1">
+      {% for r in top %}
+      <li class="flex justify-between">
+        <span>{{ r.menu_label }}</span>
+        <span>{{ r.total_qty }}</span>
+      </li>
+      {% empty %}
+      <li class="text-gray-500">ไม่มีข้อมูล</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="lg:col-span-9 grid sm:grid-cols-3 gap-4">
+    <div class="bg-white p-5 rounded-2xl shadow flex flex-col items-center justify-center text-center">
+      <div class="text-sm text-gray-500 mb-1">Total Orders</div>
+      <div id="kpiOrders" class="text-3xl font-semibold">-</div>
+    </div>
+    <div class="bg-white p-5 rounded-2xl shadow flex flex-col items-center justify-center text-center">
+      <div class="text-sm text-gray-500 mb-1">รายได้รวม</div>
+      <div id="kpiRevenue" class="text-3xl font-semibold">-</div>
+    </div>
+    <div class="bg-white p-5 rounded-2xl shadow flex flex-col items-center justify-center text-center">
+      <div class="text-sm text-gray-500 mb-1">มูลค่าเฉลี่ยต่อออเดอร์ (AOV)</div>
+      <div id="kpiAOV" class="text-3xl font-semibold">-</div>
+    </div>
+  </div>
+</div>
+<!-- แถวล่าง: Hourly big + AOV (ยังคงไว้ด้านล่าง) -->
+<div class="grid gap-6 mt-6">
+  <div class="bg-white p-4 rounded-2xl shadow">
+    <h2 class="font-semibold mb-2">รายได้ & จำนวนบิลตามชั่วโมง (24 ชม.)</h2>
+    <canvas id="byHourCombo" height="160"></canvas>
+  </div>
+<!-- แถวกลาง: Day line + Channel donut -->
+<div class="grid lg:grid-cols-12 gap-6 mt-6">
+  <div class="bg-white p-4 rounded-2xl shadow lg:col-span-8">
+    <h2 class="font-semibold mb-2">รายได้รายวัน</h2>
+    <canvas id="byDay" height="120"></canvas>
+
+    <h3 class="font-medium mt-6 mb-2">รายได้สะสม</h3>
+    <canvas id="byDayCum" height="110"></canvas>
+  </div>
+
+  <div class="bg-white p-4 rounded-2xl shadow lg:col-span-4">
+    <h2 class="font-semibold mb-2">รายได้ตามช่องทาง</h2>
+    <div id="channelEmpty" class="text-sm text-gray-500 hidden">ไม่มีข้อมูลช่องทาง</div>
+    <canvas id="byChannel" height="220"></canvas>
+  </div>
+</div>
+
+  <div class="bg-white p-4 rounded-2xl shadow">
+    <h2 class="font-semibold mb-2">มูลค่าคำสั่งซื้อโดยเฉลี่ยต่อชั่วโมง (AOV)</h2>
+    <canvas id="aovHour" height="130"></canvas>
+  </div>
+</div>
+
+<!-- AI box -->
+<div class="grid mt-6">
+  <div class="bg-white p-4 rounded-2xl shadow">
+    <h2 class="font-semibold mb-2">สรุป & คำแนะนำ (AI)</h2>
+    <div id="aiBox" class="text-sm whitespace-pre-wrap min-h-[120px]"></div>
+    <div class="mt-3 flex flex-col items-center gap-2">
+      <button id="refreshAI" class="px-3 py-2 rounded-xl bg-black text-white">อัปเดตสรุป</button>
+      <span id="aiLoading" class="text-gray-500 hidden">กำลังสรุปข้อมูล...</span>
+    </div>
+  </div>
+</div>
+
+<!-- ส่งข้อมูลเป็น JSON ปลอดภัย -->
+{{ hour|json_script:"hour-data" }}
+{{ day|json_script:"day-data" }}
+{{ day_cum|json_script:"day-cum-data" }}
+{{ channel|json_script:"channel-data" }}
+
+<script>
+  // ---------- Helpers ----------
+  const nf = new Intl.NumberFormat('th-TH');
+  const cf = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 });
+  const fmtHour = h => `${String(h).padStart(2,'0')}:00`;
+  const fmtDate = s => {
+    if (!s) return s;
+    if (s.includes('T')) return s.split('T')[0];
+    if (s.includes(' ')) return s.split(' ')[0];
+    return s;
+  };
+
+  // เติมชั่วโมงให้ครบ 0-23 และคำนวณ AOV
+  function buildFull24HourSeries(data) {
+    const mRev = new Map(data.map(x => [Number(x.hr), Number(x.rev)]));
+    const mOrd = new Map(data.map(x => [Number(x.hr), Number(x.orders ?? 0)]));
+    const hours  = Array.from({length: 24}, (_, h) => h);
+    const labels = hours.map(fmtHour);
+    const rev    = hours.map(h => mRev.get(h) || 0);
+    const orders = hours.map(h => mOrd.get(h) || 0);
+    const aov    = hours.map((_, i) => orders[i] ? rev[i] / orders[i] : 0);
+    return { labels, rev, orders, aov };
+  }
+
+  // ---------- Data ----------
+  const hourData   = JSON.parse(document.getElementById('hour-data').textContent   || '[]'); // [{hr, rev, orders, aov}]
+  const dayData    = JSON.parse(document.getElementById('day-data').textContent    || '[]'); // [{d, rev}]
+  const dayCumData = JSON.parse(document.getElementById('day-cum-data').textContent|| '[]'); // [{d, rev, cum_rev}]
+  const channelData= JSON.parse(document.getElementById('channel-data').textContent|| '[]'); // [{channel, rev}]
+
+  const H = buildFull24HourSeries(hourData);
+
+  // ---------- KPI Cards ----------
+  const totalOrders  = H.orders.reduce((s,v) => s + (v||0), 0);
+  const totalRevenue = dayData.reduce((s,x) => s + Number(x.rev||0), 0);
+  const avgOrder     = totalOrders ? totalRevenue / totalOrders : 0;
+
+  document.getElementById('kpiOrders').textContent  = nf.format(totalOrders);
+  document.getElementById('kpiRevenue').textContent = cf.format(totalRevenue);
+  document.getElementById('kpiAOV').textContent     = cf.format(avgOrder);
+
+  // ---------- Daily line (แสดงจุด + เฉพาะวันที่) ----------
+  (() => {
+    const el = document.getElementById('byDay');
+    if (!el || typeof Chart === 'undefined') return;
+    const labels = dayData.map(x => fmtDate(x.d));
+    new Chart(el, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Revenue',
+          data: dayData.map(x => x.rev),
+          tension: 0.2,
+          pointRadius: 3,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { ticks: { callback: (v, i) => labels[i] } },
+          y: { beginAtZero: true, ticks: { callback: v => cf.format(v) } }
+        },
+        plugins: {
+          tooltip: { callbacks: { title: items => items[0].label, label: c => `รายได้: ${cf.format(c.parsed.y)}` } }
+        }
+      }
+    });
+  })();
+
+  // ---------- Daily cumulative (แสดงจุด + เฉพาะวันที่) ----------
+  (() => {
+    const el = document.getElementById('byDayCum');
+    if (!el || typeof Chart === 'undefined') return;
+    const labels = dayCumData.map(x => fmtDate(x.d));
+    new Chart(el, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Cumulative',
+          data: dayCumData.map(x => x.cum_rev),
+          tension: 0.25,
+          pointRadius: 3,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { ticks: { callback: (v, i) => labels[i] } },
+          y: { beginAtZero: true, ticks: { callback: v => cf.format(v) } }
+        },
+        plugins: {
+          tooltip: { callbacks: { title: items => items[0].label, label: c => `สะสม: ${cf.format(c.parsed.y)}` } }
+        }
+      }
+    });
+  })();
+
+  // ---------- Channel donut ----------
+  (() => {
+    const el = document.getElementById('byChannel');
+    const empty = document.getElementById('channelEmpty');
+    if (!el || typeof Chart === 'undefined') return;
+
+    if (!channelData.length) { empty.classList.remove('hidden'); el.classList.add('hidden'); return; }
+    new Chart(el, {
+      type: 'doughnut',
+      data: {
+        labels: channelData.map(x => x.channel),
+        datasets: [{ label: 'Revenue', data: channelData.map(x => x.rev) }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          tooltip: { callbacks: { label: c => `${c.label}: ${cf.format(c.parsed)}` } },
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  })();
+
+  // ---------- Hourly (ใหญ่/แถวล่าง) ----------
+  (() => {
+    const el = document.getElementById('byHourCombo');
+    if (!el || typeof Chart === 'undefined') return;
+
+    new Chart(el, {
+      data: {
+        labels: H.labels,
+        datasets: [
+          { type: 'bar',  label: 'รายได้',    data: H.rev,    yAxisID: 'y'  },
+          { type: 'line', label: 'จำนวนบิล', data: H.orders, yAxisID: 'y1', tension: 0.2, pointRadius: 2 }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x:  { ticks: { autoSkip: false, maxRotation: 0, minRotation: 0 } },
+          y:  { beginAtZero: true, ticks: { callback: v => cf.format(v) },  title: { display: true, text: 'รายได้ (บาท)' } },
+          y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false },
+                ticks: { callback: v => nf.format(v) }, title: { display: true, text: 'จำนวนบิล' } }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: (items) => items[0]?.label || '',
+              label: (item) => item.datasetIndex === 0
+                               ? `รายได้: ${cf.format(item.parsed.y)}`
+                               : `จำนวนบิล: ${nf.format(item.parsed.y)}`,
+              afterBody: (items) => {
+                const i = items[0].dataIndex;
+                const ord = H.orders[i] || 0;
+                const rev = H.rev[i] || 0;
+                const aov = ord ? rev / ord : 0;
+                return ord ? [`AOV: ${cf.format(aov)}`] : [];
+              }
+            }
+          },
+          legend: { display: true }
+        }
+      }
+    });
+  })();
+
+  // ---------- AOV ต่อชั่วโมง (เต็มแถว) ----------
+  (() => {
+    const el = document.getElementById('aovHour');
+    if (!el || typeof Chart === 'undefined') return;
+
+    new Chart(el, {
+      type: 'bar',
+      data: {
+        labels: H.labels,
+        datasets: [{ label: 'AOV (บาท/บิล)', data: H.aov }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { ticks: { autoSkip: false, maxRotation: 0, minRotation: 0 } },
+          y: { beginAtZero: true, ticks: { callback: v => cf.format(v) } }
+        },
+        plugins: { tooltip: { callbacks: { label: c => `AOV: ${cf.format(c.parsed.y)}` } } }
+      }
+    });
+  })();
+
+  // ---------- AI summary (กดปุ่มเท่านั้น) ----------
+  const aiBtn = document.getElementById('refreshAI');
+  const aiBox = document.getElementById('aiBox');
+  const aiLoading = document.getElementById('aiLoading');
+
+  const cacheKey = 'ai_summary:' + location.search;
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) aiBox.textContent = cached;
+
+  let inFlight = false;
+  async function fetchSummary() {
+    if (inFlight) return;
+    inFlight = true;
+    try {
+      aiBtn.disabled = true;
+      aiBtn.classList.add('opacity-60','cursor-not-allowed');
+      aiLoading.classList.remove('hidden');
+      aiBox.textContent = 'กำลังสรุปข้อมูล...';
+
+      const params = new URLSearchParams(window.location.search);
+      const r = await fetch('/api/summary?' + params.toString(), {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (r.redirected || r.status === 401) {
+        aiBox.textContent = 'เซสชันหมดอายุ กรุณารีเฟรชหน้าแล้วเข้าสู่ระบบใหม่';
+        return;
+      }
+
+      const ct = (r.headers.get('content-type') || '').toLowerCase();
+      const data = ct.includes('application/json') ? await r.json() : { error: 'คำตอบไม่ใช่ JSON' };
+      const text = data.summary || data.error || 'ไม่มีข้อความสรุป';
+      aiBox.textContent = text;
+      sessionStorage.setItem(cacheKey, text);
+    } catch (e) {
+      aiBox.textContent = 'เรียกใช้ AI ไม่สำเร็จ: ' + (e?.message || e);
+    } finally {
+      aiBtn.disabled = false;
+      aiBtn.classList.remove('opacity-60','cursor-not-allowed');
+      aiLoading.classList.add('hidden');
+      inFlight = false;
+    }
+  }
+  aiBtn.addEventListener('click', fetchSummary);
+</script>
+{% endblock %}
