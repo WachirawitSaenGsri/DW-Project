@@ -44,3 +44,4 @@ ALTER TABLE analytics.fact_sales
 ADD COLUMN IF NOT EXISTS channel LowCardinality(String) DEFAULT '';
 "
 
+ไฟล์ข้อมูลทดลองอยู่ในไฟล์ scripts 
