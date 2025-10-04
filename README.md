@@ -20,7 +20,7 @@ docker compose exec clickhouse clickhouse-client -q "GRANT TRUNCATE ON analytics
 
 docker compose exec clickhouse clickhouse-client -q "GRANT ALTER ON analytics.* TO app_user"
 
-docker compose exec web bash -lc "python manage.py makemigrations myapp"
+docker compose exec web bash -lc "python manage.py makemigrations"
 
 docker compose exec web bash -lc "python manage.py migrate"
 
