@@ -1,5 +1,7 @@
 # DW-Project
 
+รันตามนี้
+
 docker compose build
 
 docker compose up -d
@@ -18,9 +20,11 @@ docker compose exec clickhouse clickhouse-client -q "GRANT TRUNCATE ON analytics
 
 docker compose exec clickhouse clickhouse-client -q "GRANT ALTER ON analytics.* TO app_user"
 
-docker compose exec web bash -lc "python manage.py makemigrations myapp"
+docker compose exec web bash -lc "python manage.py makemigrations"
 
 docker compose exec web bash -lc "python manage.py migrate"
+
+docker compose exec web bash -lc "python manage.py createsuperuser" 
 
 docker compose exec clickhouse clickhouse-client -q "
 CREATE TABLE IF NOT EXISTS analytics.fact_sales
@@ -44,3 +48,4 @@ ALTER TABLE analytics.fact_sales
 ADD COLUMN IF NOT EXISTS channel LowCardinality(String) DEFAULT '';
 "
 
+ไฟล์ข้อมูลทดลองอยู่ในไฟล์ scripts 
