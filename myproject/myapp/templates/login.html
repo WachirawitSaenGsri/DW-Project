@@ -1,16 +1,96 @@
+{# templates/login.html #}
 {% extends 'base.html' %}
 {% block title %}เข้าสู่ระบบ{% endblock %}
 {% block content %}
-<div class="max-w-sm mx-auto bg-white p-6 rounded-2xl shadow">
-  <h1 class="text-xl font-semibold mb-4">เข้าสู่ระบบ</h1>
+
+<style>
+  @keyframes fadeInUp { from {opacity:0; transform: translateY(30px)} to {opacity:1; transform: translateY(0)} }
+  @keyframes scaleIn { from {opacity:0; transform: scale(.96)} to {opacity:1; transform: scale(1)} }
+  .fade-in-up { animation: fadeInUp .6s ease-out both; }
+  .scale-in  { animation: scaleIn .5s ease-out both; }
+  .card-hover { transition: all .3s cubic-bezier(.4,0,.2,1) }
+  .card-hover:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 20px 40px rgba(0,0,0,.08) }
+  .gradient-bg { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%) }
+  .gradient-text {
+    background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .glass-effect { backdrop-filter: blur(10px); background: rgba(255,255,255,.96); border: 1px solid rgba(255,255,255,.2) }
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:linear-gradient(135deg,#667eea,#764ba2);border-radius:10px}
+</style>
+
+<!-- พื้นหลังไล่สีให้เหมือน Dashboard -->
+<div class="fixed inset-0 bg-gradient-to-br from-purple-50 via-white to-pink-50 -z-10"></div>
+
+<!-- Header -->
+<div class="max-w-sm mx-auto mb-8 px-3 fade-in-up text-center">
+  <h1 class="text-3xl font-bold gradient-text">เข้าสู่ระบบ</h1>
+  <p class="mt-2 text-gray-600">ยินดีต้อนรับกลับ 👋</p>
+</div>
+
+<!-- กล่องล็อกอิน -->
+<div class="max-w-sm mx-auto glass-effect p-6 md:p-7 rounded-3xl shadow-xl card-hover fade-in-up">
   <form method="post" class="space-y-4">
     {% csrf_token %}
-    <input name="username" class="w-full border rounded-lg p-2" placeholder="Username" required />
-    <input name="password" type="password" class="w-full border rounded-lg p-2" placeholder="Password" required />
-    <button class="w-full bg-black text-white rounded-xl py-2">เข้าสู่ระบบ</button>
-  </form>
-  {% for m in messages %}
-    <p class="mt-3 text-red-600 text-sm">{{ m }}</p>
-  {% endfor %}
+
+    <div>
+      <label class="block text-sm text-gray-700 mb-1">Username</label>
+      <input name="username" class="w-full border border-gray-200 focus:border-purple-300 focus:ring-2 focus:ring-purple-200 rounded-xl p-3 outline-none"
+             placeholder="username" required />
+    </div>
+
+    <div>
+      <label class="block text-sm text-gray-700 mb-1">Password</label>
+      <div class="relative">
+        <input id="password" name="password" type="password"
+               class="w-full border border-gray-200 focus:border-purple-300 focus:ring-2 focus:ring-purple-200 rounded-xl p-3 pr-12 outline-none"
+               placeholder="••••••••" required />
+        <button type="button" id="togglePw"
+                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                aria-label="toggle password">
+          <!-- eye icon -->
+          <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+          </svg>
+          <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3.53 2.47 2.47 3.53 6.2 7.26C3.86 8.64 2.34 10.49 2 12c.6 2.5 4 7 10 7 2 0 3.7-.5 5.1-1.22l3.37 3.37 1.06-1.06zM8.1 9.16l1.6 1.6a3 3 0 0 0 3.54 3.54l1.6 1.6A5 5 0 0 1 8.1 9.16zm3.9-4.16c-2.02 0-3.72.52-5.11 1.24l2.02 2.02A5 5 0 0 1 17 12c-.1.45-.27.89-.49 1.3l2.21 2.21C20.14 13.95 22 11.9 22 12c-.6-2.5-4-7-10-7z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+<div class="mt-5 text-center text-sm text-gray-600">
+  ยังไม่มีบัญชี?
+  <a href="{% url 'register' %}" class="text-purple-700 hover:underline">สมัครสมาชิก</a>
 </div>
+    <button class="w-full gradient-bg text-white rounded-xl py-3 font-medium hover:shadow-lg scale-in">
+      เข้าสู่ระบบ
+    </button>
+  </form>
+
+  {% if messages %}
+    <div class="mt-4 space-y-2">
+      {% for m in messages %}
+        <p class="text-sm px-3 py-2 rounded-lg {% if 'error' in m.tags %}bg-red-50 text-red-700{% else %}bg-purple-50 text-purple-700{% endif %}">
+          {{ m }}
+        </p>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  // toggle password
+  const pw = document.getElementById('password');
+  const btn = document.getElementById('togglePw');
+  const openI = document.getElementById('eyeOpen');
+  const closedI = document.getElementById('eyeClosed');
+  btn.addEventListener('click', () => {
+    const show = pw.type === 'password';
+    pw.type = show ? 'text' : 'password';
+    openI.classList.toggle('hidden', !show);
+    closedI.classList.toggle('hidden', show);
+  });
+</script>
 {% endblock %}

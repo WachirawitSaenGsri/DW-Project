@@ -1,0 +1,133 @@
+{# templates/register.html #}
+{% extends 'base.html' %}
+{% block title %}สมัครสมาชิก{% endblock %}
+{% block content %}
+
+<style>
+  @keyframes fadeInUp { from {opacity:0; transform: translateY(30px)} to {opacity:1; transform: translateY(0)} }
+  @keyframes scaleIn { from {opacity:0; transform: scale(.96)} to {opacity:1; transform: scale(1)} }
+  .fade-in-up { animation: fadeInUp .6s ease-out both; }
+  .scale-in  { animation: scaleIn .5s ease-out both; }
+  .card-hover { transition: all .3s cubic-bezier(.4,0,.2,1) }
+  .card-hover:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 20px 40px rgba(0,0,0,.08) }
+  .gradient-bg { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%) }
+  .gradient-text {
+    background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .glass-effect { backdrop-filter: blur(10px); background: rgba(255,255,255,.96); border: 1px solid rgba(255,255,255,.2) }
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:linear-gradient(135deg,#667eea,#764ba2);border-radius:10px}
+  .helptext { font-size:.78rem; color:#6b7280 }
+  .err { font-size:.8rem; color:#b91c1c; background:#fef2f2; border-radius:.75rem; padding:.4rem .6rem; }
+</style>
+
+<!-- พื้นหลังไล่สีให้เหมือน Dashboard -->
+<div class="fixed inset-0 bg-gradient-to-br from-purple-50 via-white to-pink-50 -z-10"></div>
+
+<!-- Header -->
+<div class="max-w-sm mx-auto mb-8 px-3 fade-in-up text-center">
+  <h1 class="text-3xl font-bold gradient-text">สมัครสมาชิก</h1>
+  <p class="mt-2 text-gray-600">สร้างบัญชีใหม่เพื่อเข้าใช้งานแดชบอร์ด</p>
+</div>
+
+<!-- กล่องสมัคร -->
+<div class="max-w-sm mx-auto glass-effect p-6 md:p-7 rounded-3xl shadow-xl card-hover fade-in-up">
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    <!-- Username -->
+    <div>
+      <label class="block text-sm text-gray-700 mb-1">Username</label>
+      <input name="username" value="{{ form.username.value|default:'' }}"
+             class="w-full border border-gray-200 focus:border-purple-300 focus:ring-2 focus:ring-purple-200 rounded-xl p-3 outline-none"
+             placeholder="username" required />
+      {% if form.username.errors %}
+        <div class="mt-1 err">{{ form.username.errors.0 }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Password1 -->
+    <div>
+      <label class="block text-sm text-gray-700 mb-1">Password</label>
+      <div class="relative">
+        <input id="password1" name="password1" type="password"
+               class="w-full border border-gray-200 focus:border-purple-300 focus:ring-2 focus:ring-purple-200 rounded-xl p-3 pr-12 outline-none"
+               placeholder="••••••••" required />
+        <button type="button" data-target="password1"
+                class="pw-toggle absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                aria-label="toggle password 1">
+          <!-- eye icon -->
+          <svg class="eye-open h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5C5 5 2 12 2 12s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+          <svg class="eye-closed h-5 w-5 hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M3.53 2.47 2.47 3.53 6.2 7.26C3.86 8.64 2.34 10.49 2 12c.6 2.5 4 7 10 7 2 0 3.7-.5 5.1-1.22l3.37 3.37 1.06-1.06zM8.1 9.16l1.6 1.6a3 3 0 0 0 3.54 3.54l1.6 1.6A5 5 0 0 1 8.1 9.16zm3.9-4.16c-2.02 0-3.72.52-5.11 1.24l2.02 2.02A5 5 0 0 1 17 12c-.1.45-.27.89-.49.3l2.21 2.21C20.14 13.95 22 11.9 22 12c-.6-2.5-4-7-10-7z"/></svg>
+        </button>
+      </div>
+      {% if form.password1.help_text %}
+        <p class="helptext mt-1">{{ form.password1.help_text|safe }}</p>
+      {% endif %}
+      {% if form.password1.errors %}
+        <div class="mt-1 err">{{ form.password1.errors.0 }}</div>
+      {% endif %}
+    </div>
+
+    <!-- Password2 -->
+    <div>
+      <label class="block text-sm text-gray-700 mb-1">ยืนยัน Password</label>
+      <div class="relative">
+        <input id="password2" name="password2" type="password"
+               class="w-full border border-gray-200 focus:border-purple-300 focus:ring-2 focus:ring-purple-200 rounded-xl p-3 pr-12 outline-none"
+               placeholder="ยืนยันรหัสผ่าน" required />
+        <button type="button" data-target="password2"
+                class="pw-toggle absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                aria-label="toggle password 2">
+          <svg class="eye-open h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5C5 5 2 12 2 12s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+          <svg class="eye-closed h-5 w-5 hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M3.53 2.47 2.47 3.53 6.2 7.26C3.86 8.64 2.34 10.49 2 12c.6 2.5 4 7 10 7 2 0 3.7-.5 5.1-1.22l3.37 3.37 1.06-1.06zM8.1 9.16l1.6 1.6a3 3 0 0 0 3.54 3.54l1.6 1.6A5 5 0 0 1 8.1 9.16zm3.9-4.16c-2.02 0-3.72.52-5.11 1.24l2.02 2.02A5 5 0 0 1 17 12c-.1.45-.27.89-.49.3l2.21 2.21C20.14 13.95 22 11.9 22 12c-.6-2.5-4-7-10-7z"/></svg>
+        </button>
+      </div>
+      {% if form.password2.errors %}
+        <div class="mt-1 err">{{ form.password2.errors.0 }}</div>
+      {% endif %}
+    </div>
+
+    <!-- ปุ่ม -->
+    <button class="w-full gradient-bg text-white rounded-xl py-3 font-medium hover:shadow-lg scale-in">
+      สมัครสมาชิก
+    </button>
+  </form>
+
+  {% if form.non_field_errors %}
+    <div class="mt-4 err">{{ form.non_field_errors.0 }}</div>
+  {% endif %}
+
+  {% if messages %}
+    <div class="mt-4 space-y-2">
+      {% for m in messages %}
+        <p class="text-sm px-3 py-2 rounded-lg {% if 'error' in m.tags %}bg-red-50 text-red-700{% else %}bg-purple-50 text-purple-700{% endif %}">
+          {{ m }}
+        </p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="mt-5 text-center text-sm text-gray-600">
+    มีบัญชีอยู่แล้ว?
+    <a href="{% url 'login' %}" class="text-purple-700 hover:underline">เข้าสู่ระบบ</a>
+  </div>
+</div>
+
+<script>
+  // toggle password ทั้งสองช่อง
+  document.querySelectorAll('.pw-toggle').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.getAttribute('data-target');
+      const input = document.getElementById(id);
+      const open = btn.querySelector('.eye-open');
+      const closed = btn.querySelector('.eye-closed');
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      open.classList.toggle('hidden', !show);
+      closed.classList.toggle('hidden', show);
+    });
+  });
+</script>
+{% endblock %}

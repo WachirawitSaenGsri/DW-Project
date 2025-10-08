@@ -1,46 +1,118 @@
+{# templates/upload_csv.html #}
 {% extends 'base.html' %}
 {% block title %}อัปโหลด CSV{% endblock %}
 {% block content %}
-<div class="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow">
-  <h1 class="text-2xl font-semibold mb-4">อัปโหลดไฟล์ยอดขาย (CSV)</h1>
-  <p class="text-sm text-gray-600 mb-4">
-    รองรับหัวคอลัมน์: order_id, order_ts, sku, menu_name, category, qty, unit_price, discount, customer_id, customer_name, channel
-  </p>
 
-  <form method="post" enctype="multipart/form-data" class="space-y-5">
+<style>
+  @keyframes fadeInUp { from {opacity:0; transform: translateY(30px)} to {opacity:1; transform: translateY(0)} }
+  @keyframes scaleIn { from {opacity:0; transform: scale(.96)} to {opacity:1; transform: scale(1)} }
+  .fade-in-up { animation: fadeInUp .6s ease-out both; }
+  .scale-in  { animation: scaleIn .5s ease-out both; }
+  .card-hover { transition: all .3s cubic-bezier(.4,0,.2,1) }
+  .card-hover:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 20px 40px rgba(0,0,0,.08) }
+  .gradient-bg { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%) }
+  .gradient-text {
+    background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .glass-effect { backdrop-filter: blur(10px); background: rgba(255,255,255,.96); border: 1px solid rgba(255,255,255,.2) }
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:linear-gradient(135deg,#667eea,#764ba2);border-radius:10px}
+</style>
+
+<!-- พื้นหลังไล่สีเหมือน Dashboard -->
+<div class="fixed inset-0 bg-gradient-to-br from-purple-50 via-white to-pink-50 -z-10"></div>
+
+<!-- Header -->
+<div class="max-w-3xl mx-auto mb-8 px-3 fade-in-up">
+  <div class="flex items-center justify-between">
+    <h1 class="text-3xl md:text-4xl font-bold gradient-text">อัปโหลดไฟล์ยอดขาย (CSV)</h1>
+  </div>
+  <p class="mt-2 text-gray-600">อัปเดตข้อมูลยอดขายอย่างรวดเร็วในไม่กี่คลิก</p>
+</div>
+
+<!-- กล่องหลักสไตล์ glass -->
+<div class="max-w-3xl mx-auto glass-effect p-6 md:p-8 rounded-3xl shadow-xl card-hover fade-in-up">
+  <div class="mb-5">
+    <h2 class="font-semibold text-lg gradient-text">รูปแบบไฟล์ที่รองรับ</h2>
+    <p class="text-sm text-gray-600 mt-1">หัวคอลัมน์ที่รองรับ:</p>
+
+    <!-- ชิปคอลัมน์ (ไม่ใช้ .split ใน template) -->
+    <div class="flex flex-wrap gap-2 mt-3">
+      <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-medium">order_id</span>
+      <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-medium">order_ts</span>
+      <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-medium">sku</span>
+      <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-medium">menu_name</span>
+      <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-medium">category</span>
+      <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-medium">qty</span>
+      <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-medium">unit_price</span>
+      <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-medium">discount</span>
+      <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-medium">customer_id</span>
+      <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-medium">customer_name</span>
+      <span class="px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 text-xs font-medium">channel</span>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-6">
     {% csrf_token %}
 
-    <!-- ซ่อน input เดิมไว้ แล้วใช้ label เป็นปุ่ม -->
-    <input id="csvFile" name="file" type="file" accept=".csv"
-           class="hidden">
-
-    <div class="flex items-center gap-3">
+    <!-- ปุ่มเลือกไฟล์แบบ label -->
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <input id="csvFile" name="file" type="file" accept=".csv" class="hidden" required>
       <label for="csvFile"
-             class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-800 cursor-pointer">
-        <!-- ไอคอนกระดาษ -->
+             class="inline-flex items-center gap-2 px-5 py-3 rounded-xl gradient-bg text-white font-medium hover:shadow-lg cursor-pointer">
+        <!-- ไอคอนไฟล์ -->
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm0 0v6h6"/>
         </svg>
         เลือกไฟล์ CSV
       </label>
-
       <span id="fileName" class="text-sm text-gray-600">ยังไม่ได้เลือกไฟล์</span>
     </div>
 
-    <button class="px-4 py-2 rounded-xl bg-black text-white">อัปโหลด</button>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <button class="px-5 py-3 rounded-xl gradient-bg text-white font-medium hover:shadow-lg scale-in" type="submit">
+        อัปโหลด
+      </button>
+      <a href="{% url 'dashboard' %}" class="px-5 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium">
+        กลับไปแดชบอร์ด
+      </a>
+    </div>
   </form>
 
-  {% for m in messages %}
-    <p class="mt-3 text-sm {{ m.tags }}">{{ m }}</p>
-  {% endfor %}
+  {% if messages %}
+    <div class="mt-6 space-y-2">
+      {% for m in messages %}
+        {% if 'error' in m.tags %}
+          <p class="text-sm px-3 py-2 rounded-lg bg-red-50 text-red-700">{{ m }}</p>
+        {% elif 'success' in m.tags %}
+          <p class="text-sm px-3 py-2 rounded-lg bg-green-50 text-green-700">{{ m }}</p>
+        {% else %}
+          <p class="text-sm px-3 py-2 rounded-lg bg-purple-50 text-purple-700">{{ m }}</p>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
 </div>
 
 <script>
-  // อัปเดตชื่อไฟล์ที่เลือก
+  // อัปเดตชื่อไฟล์และขนาดเมื่อเลือก
   const input = document.getElementById('csvFile');
   const fileName = document.getElementById('fileName');
   input.addEventListener('change', () => {
-    fileName.textContent = input.files.length ? input.files[0].name : 'ยังไม่ได้เลือกไฟล์';
+    if (!input.files.length) {
+      fileName.textContent = 'ยังไม่ได้เลือกไฟล์';
+      return;
+    }
+    const f = input.files[0];
+    const sizeKB = (f.size/1024).toFixed(1);
+    fileName.textContent = `${f.name} • ${sizeKB} KB`;
+    if (!/\.csv$/i.test(f.name)) {
+      alert('กรุณาเลือกไฟล์นามสกุล .csv');
+      input.value = '';
+      fileName.textContent = 'ยังไม่ได้เลือกไฟล์';
+    }
   });
 </script>
 {% endblock %}
