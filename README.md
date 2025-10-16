@@ -24,7 +24,7 @@
    
   - ClickHouse และฐานข้อมูล MySQL
     
-  - Generative AI ที่ใช้ Llama
+  - Generative AI ที่ใช้ Llama api จาก openrouter
     
   - Application Framework ที่จะนำมาพัฒนาแอปพลิเคชัน Django
 
