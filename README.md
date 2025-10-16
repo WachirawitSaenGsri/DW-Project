@@ -24,15 +24,18 @@
    
   - ClickHouse และฐานข้อมูล MySQL
     
-	- Generative AI ที่ใช้ Llama
+  - Generative AI ที่ใช้ Llama
     
   - Application Framework ที่จะนำมาพัฒนาแอปพลิเคชัน Django
 
    # ลิงก์วีดีโอ นำเสนอโครงการ  (อยู่ใน Google drive / เข้าถึงได้โดยอีเมล์ wichit.s@ubu.ac.th)
 
       
-      
-รันตามนี้
+
+
+
+	  
+# คำสั่งรันโปรแกรม
 
 docker compose build
 
